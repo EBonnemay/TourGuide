@@ -2,13 +2,7 @@ package tourGuide.service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -20,6 +14,8 @@ import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.Location;
 import gpsUtil.location.VisitedLocation;
+import tourGuide.AttractionWithDistanceToUser;
+import tourGuide.ListOfAttractionsCloseToUser;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.tracker.Tracker;
 import tourGuide.user.User;
@@ -49,18 +45,31 @@ public class TourGuideService {
 		tracker = new Tracker(this);
 		addShutDownHook();
 	}
-	
+	// renvoie les récompenses de l'utilisateur passé en paramètre.
 	public List<UserReward> getUserRewards(User user) {
 		return user.getUserRewards();
 	}
-	
+	//renvoie la localisation de l'utilisateur passée en paramètre
+	// en utilisant la méthode trackUserLocation pour la récupérer
+	// s'il n'y a pas de localisations enregistrées pour l'utilisateur.
+
+	/**
+	 * equivalent de getUserLocation
+	 * VisitedLocation visitedLocation;
+	 * if (user.getVisitedLocations().size() > 0) {
+	 *     visitedLocation = user.getLastVisitedLocation();
+	 * } else {
+	 *     visitedLocation = trackUserLocation(user);
+	 * }
+	 */
 	public VisitedLocation getUserLocation(User user) {
 		VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ?
 			user.getLastVisitedLocation() :
 			trackUserLocation(user);
 		return visitedLocation;
+
 	}
-	
+
 	public User getUser(String userName) {
 		return internalUserMap.get(userName);
 	}
@@ -74,7 +83,7 @@ public class TourGuideService {
 			internalUserMap.put(user.getUserName(), user);
 		}
 	}
-	
+	//renvoie une liste d'offres de voyage pour l'utilisateur passée en paramètre.
 	public List<Provider> getTripDeals(User user) {
 		int cumulatativeRewardPoints = user.getUserRewards().stream().mapToInt(i -> i.getRewardPoints()).sum();
 		List<Provider> providers = tripPricer.getPrice(tripPricerApiKey, user.getUserId(), user.getUserPreferences().getNumberOfAdults(), 
@@ -82,14 +91,24 @@ public class TourGuideService {
 		user.setTripDeals(providers);
 		return providers;
 	}
-	
+	//Cette méthode permet de suivre la position de l'utilisateur
+	// et d'ajouter la dernière position visitée à sa liste de lieux visités.
+	// Elle utilise le service GPS pour obtenir la position actuelle de l'utilisateur
+	// et ajoute cette position à sa liste de positions visitées
+	// en appelant la méthode "addToVisitedLocations" de l'utilisateur.
+	// Ensuite, elle utilise le service de récompenses
+	// pour calculer les récompenses potentielles que l'utilisateur pourrait recevoir
+	// en visitant cette position.
+	//Enfin, elle retourne la dernière position visitée.
 	public VisitedLocation trackUserLocation(User user) {
 		VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
 		user.addToVisitedLocations(visitedLocation);
 		rewardsService.calculateRewards(user);
 		return visitedLocation;
 	}
+	//en paramètre : un lieu visité; en return : une proposition de listes de lieux à visiter
 
+	//au lieu de renvoyer une lis
 	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 		List<Attraction> nearbyAttractions = new ArrayList<>();
 		for(Attraction attraction : gpsUtil.getAttractions()) {
@@ -97,10 +116,46 @@ public class TourGuideService {
 				nearbyAttractions.add(attraction);
 			}
 		}
-		
 		return nearbyAttractions;
 	}
-	
+	//replace previous by :
+	public ListOfAttractionsCloseToUser  getNearByAttractionsV2(VisitedLocation visitedLocation){
+		ArrayList<AttractionWithDistanceToUser> listOfAttractionsWithDistances = new ArrayList<>();
+		double distance = 0;
+		List<Attraction> listOfAttractions = gpsUtil.getAttractions();
+		for (Attraction attraction : gpsUtil.getAttractions()){
+			Location attractionLocation = new Location(attraction.latitude, attraction.longitude);
+			Location locationOfVisitedLocation = new Location(visitedLocation.location.latitude, visitedLocation.location.longitude);
+			double foundDistance = rewardsService.getDistance(locationOfVisitedLocation, attractionLocation);
+			AttractionWithDistanceToUser attractionWithDistanceToUser = new AttractionWithDistanceToUser();
+			attractionWithDistanceToUser.setNameOfTouristAttraction(attraction.attractionName);
+			attractionWithDistanceToUser.setLocationOfTouristAttraction(attractionLocation);
+			attractionWithDistanceToUser.setLocationOfUserCloseToAttraction(locationOfVisitedLocation);
+			attractionWithDistanceToUser.setDistanceInMilesBetweenTheUsersLocationAndThisAttraction(foundDistance);
+			listOfAttractionsWithDistances.add(attractionWithDistanceToUser);
+		}
+		Comparator<AttractionWithDistanceToUser> byDistance = Comparator.comparing(AttractionWithDistanceToUser::getDistanceInMilesBetweenTheUsersLocationAndThisAttraction);
+		Collections.sort(listOfAttractionsWithDistances, byDistance);
+		ListOfAttractionsCloseToUser listOfAttractionsCloseToUser= new ListOfAttractionsCloseToUser();
+		//listOfAttractionsCloseToUser.get
+		//aller chercher la liste d'attractions closetouser dans l'objet list of attractionsclose...
+		ArrayList<AttractionWithDistanceToUser> listAttributeOfListObject = new ArrayList<>();
+
+		listAttributeOfListObject.add(listOfAttractionsWithDistances.get(0));
+		listAttributeOfListObject.add(listOfAttractionsWithDistances.get(1));
+		listAttributeOfListObject.add(listOfAttractionsWithDistances.get(2));
+		listAttributeOfListObject.add(listOfAttractionsWithDistances.get(3));
+		listAttributeOfListObject.add(listOfAttractionsWithDistances.get(4));
+		listOfAttractionsCloseToUser.setListOfAttractionsCloseToUser(listAttributeOfListObject);
+
+
+		//dans cette liste ajouter les objets 0 à 4 de la list of attractions with disrtances
+		//set la liste dans l'objet listofattr
+		//retourner l'objet
+
+		return listOfAttractionsCloseToUser;
+	};
+
 	private void addShutDownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() { 
 		      public void run() {

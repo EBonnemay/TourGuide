@@ -14,6 +14,7 @@ import tourGuide.user.UserReward;
 
 @Service
 public class RewardsService {
+
     private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
 
 	// proximity in miles
@@ -22,6 +23,7 @@ public class RewardsService {
 	private int attractionProximityRange = 200;
 	private final GpsUtil gpsUtil;
 	private final RewardCentral rewardsCentral;
+	//Rewards service class is constructed with gpsUtil and RewardCentral
 	
 	public RewardsService(GpsUtil gpsUtil, RewardCentral rewardCentral) {
 		this.gpsUtil = gpsUtil;
@@ -35,7 +37,13 @@ public class RewardsService {
 	public void setDefaultProximityBuffer() {
 		proximityBuffer = defaultProximityBuffer;
 	}
-	
+	//This method calculates rewards for a given user
+	// based on their visited locations and nearby attractions.
+	// It checks if the user has already received a reward for the attraction
+	// and if the user
+	//is near enough to the attraction,
+	// it adds a new reward to the user.
+
 	public void calculateRewards(User user) {
 		List<VisitedLocation> userLocations = user.getVisitedLocations();
 		List<Attraction> attractions = gpsUtil.getAttractions();
@@ -50,19 +58,21 @@ public class RewardsService {
 			}
 		}
 	}
-	
 	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
 		return getDistance(attraction, location) > attractionProximityRange ? false : true;
 	}
-	
+	//This method checks if a given location is within the attraction proximity range.
 	private boolean nearAttraction(VisitedLocation visitedLocation, Attraction attraction) {
 		return getDistance(attraction, visitedLocation.location) > proximityBuffer ? false : true;
 	}
-	
+	//This method calculates
+	// the reward points for a given attraction based on the user's id.
 	private int getRewardPoints(Attraction attraction, User user) {
 		return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
 	}
-	
+	// This method calculates the distance between two locations
+	// using their longitude and latitude values.
+	// It returns the distance in statute miles.
 	public double getDistance(Location loc1, Location loc2) {
         double lat1 = Math.toRadians(loc1.latitude);
         double lon1 = Math.toRadians(loc1.longitude);

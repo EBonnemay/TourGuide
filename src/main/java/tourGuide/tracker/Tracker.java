@@ -15,7 +15,10 @@ import tourGuide.user.User;
 public class Tracker extends Thread {
 	private Logger logger = LoggerFactory.getLogger(Tracker.class);
 	private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(5);
-	private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+	//private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+	//chercher une classe qui génère les threads de façon dynamique
+	private final ExecutorService executorService = Executors.newFixedThreadPool(6);
+
 	private final TourGuideService tourGuideService;
 	private boolean stop = false;
 
@@ -32,7 +35,15 @@ public class Tracker extends Thread {
 		stop = true;
 		executorService.shutdownNow();
 	}
-	
+	/*méthode principale qui est appelée lorsque le thread est démarré.
+	Elle récupère tous les utilisateurs, suit leur localisation,
+	mesure le temps passé à suivre leur position
+	et met le thread en pause pour un certain temps
+	avant de recommencer le suivi de localisation.
+	List<User> users = tourGuideService.getAllUsers(); récupère tous les utilisateurs
+	et users.forEach(u -> tourGuideService.trackUserLocation(u));
+	suit la position de chaque utilisateur en parallèle
+	en utilisant les threads disponibles dans le pool de threads.*/
 	@Override
 	public void run() {
 		StopWatch stopWatch = new StopWatch();

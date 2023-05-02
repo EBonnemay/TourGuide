@@ -92,7 +92,7 @@ public class TestTourGuideService {
 		assertEquals(user.getUserId(), visitedLocation.userId);
 	}
 	
-	@Ignore // Not yet implemented
+	//@Ignore // Not yet implemented
 	@Test
 	public void getNearbyAttractions() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -102,13 +102,18 @@ public class TestTourGuideService {
 		
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
 		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
-		
-		List<Attraction> attractions = tourGuideService.getNearByAttractions(visitedLocation);
-		
+		System.out.println("user location is lat : "+ visitedLocation.location.latitude+" long : "+ visitedLocation.location.longitude);
+		//List<Attraction> attractions = tourGuideService.getNearByAttractions(visitedLocation);
+		ListOfAttractionsCloseToUser listObject = tourGuideService.getNearByAttractionsV2(visitedLocation);
 		tourGuideService.tracker.stopTracking();
 		
-		assertEquals(5, attractions.size());
+		//assertEquals(5, attractions.size());
+		assertEquals(5, listObject.getListOfAttractionsCloseToUser().size());
+		for(AttractionWithDistanceToUser attraction : listObject.getListOfAttractionsCloseToUser()){
+			System.out.println(attraction.getNameOfTouristAttraction()+" "+ attraction.getDistanceInMilesBetweenTheUsersLocationAndThisAttraction());
+		}
 	}
+
 	
 	public void getTripDeals() {
 		GpsUtil gpsUtil = new GpsUtil();

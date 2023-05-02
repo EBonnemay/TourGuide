@@ -1,5 +1,5 @@
 package tourGuide.helper;
-
+//this class sets number of users for tests
 public class InternalTestHelper {
 
 	// Set this default up to 100,000 for testing
