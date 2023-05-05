@@ -2,7 +2,7 @@ package tourGuide;
 
 import java.util.ArrayList;
 
-public class ListOfAttractionsCloseToUser {
+public class ListOfFiveAttractionsCloseToOneUser {
     ArrayList<AttractionWithDistanceToUser> listOfAttractionsCloseToUser;
 
     public ArrayList<AttractionWithDistanceToUser> getListOfAttractionsCloseToUser(){

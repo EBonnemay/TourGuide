@@ -17,8 +17,8 @@ public class Tracker extends Thread {
 <span class="fc" id="L17">	private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(5);</span>
 	//private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 	//chercher une classe qui gÃ©nÃ¨re les threads de faÃ§on dynamique
-<span class="fc" id="L20">	private final ExecutorService executorService = Executors.newFixedThreadPool(6);</span>
-
+<span class="fc" id="L20">	private final ExecutorService executorService = Executors.newFixedThreadPool(1000);</span>
+	//private final ExecutorService executorService = Executors.newCachedThreadPool();
 	private final TourGuideService tourGuideService;
 <span class="fc" id="L23">	private boolean stop = false;</span>
 
@@ -48,9 +48,9 @@ public class Tracker extends Thread {
 	public void run() {
 <span class="fc" id="L49">		StopWatch stopWatch = new StopWatch();</span>
 		while(true) {
-<span class="pc bpc" id="L51" title="1 of 4 branches missed.">			if(Thread.currentThread().isInterrupted() || stop) {</span>
-<span class="fc" id="L52">				logger.debug(&quot;Tracker stopping&quot;);</span>
-<span class="fc" id="L53">				break;</span>
+<span class="pc bpc" id="L51" title="2 of 4 branches missed.">			if(Thread.currentThread().isInterrupted() || stop) {</span>
+<span class="nc" id="L52">				logger.debug(&quot;Tracker stopping&quot;);</span>
+<span class="nc" id="L53">				break;</span>
 			}
 			
 <span class="fc" id="L56">			List&lt;User&gt; users = tourGuideService.getAllUsers();</span>

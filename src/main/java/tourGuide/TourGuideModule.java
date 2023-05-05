@@ -4,15 +4,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import gpsUtil.GpsUtil;
+import org.springframework.context.annotation.Primary;
 import rewardCentral.RewardCentral;
+import tourGuide.service.GPSUtilService;
 import tourGuide.service.RewardsService;
 
 @Configuration
 public class TourGuideModule {
-	
+	@Primary
 	@Bean
-	public GpsUtil getGpsUtil() {
-		return new GpsUtil();
+	public GPSUtilService getGpsUtil() {
+		return new GPSUtilService();
 	}
 	
 	@Bean

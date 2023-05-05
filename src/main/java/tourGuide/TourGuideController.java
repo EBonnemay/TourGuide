@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import gpsUtil.location.Location;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -59,19 +60,9 @@ public class TourGuideController {
     }
     
     @RequestMapping("/getAllCurrentLocations")
-    public String getAllCurrentLocations() {
-        HashMap<String, Location> listOfEachUsersMostRecentLocation = new HashMap<>();
-        List<User> listOfUsers = tourGuideService.getAllUsers();
-        //pour chaque utilisateur de listOfUSers
-            //récupérer l'id et le nommer
-            //aller chercher le dernier lieu du suer avec public VisitedLocation getUserLocation(User user)
-        for(User user : listOfUsers){
-            String id = String.valueOf(user.getUserId());
-           // UUID idV2 = user.getUserId();//lequel des deux?
-            VisitedLocation visitedLocation = tourGuideService.getUserLocation(user);
-            Location location = visitedLocation.location;
-            listOfEachUsersMostRecentLocation.put(id, location);
-        }
+    public ResponseEntity getAllCurrentLocations() {
+
+
     	// TODO: Get a list of every user's most recent location as JSON
     	//- Note: does not use gpsUtil to query for their current location, 
     	//        but rather gathers the user's current location from their stored location history.
@@ -82,7 +73,8 @@ public class TourGuideController {
     	//        ...
     	//     }
     	
-    	return JsonStream.serialize(listOfEachUsersMostRecentLocation);
+    	//return JsonStream.serialize(listOfEachUsersMostRecentLocation);
+           return ResponseEntity.status(200).body(tourGuideService.getAllUsersCurrentLocations());
     }
     
     @RequestMapping("/getTripDeals")

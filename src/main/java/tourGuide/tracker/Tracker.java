@@ -17,8 +17,8 @@ public class Tracker extends Thread {
 	private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(5);
 	//private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 	//chercher une classe qui génère les threads de façon dynamique
-	private final ExecutorService executorService = Executors.newFixedThreadPool(6);
-
+	private final ExecutorService executorService = Executors.newFixedThreadPool(1000);
+	//private final ExecutorService executorService = Executors.newCachedThreadPool();
 	private final TourGuideService tourGuideService;
 	private boolean stop = false;
 

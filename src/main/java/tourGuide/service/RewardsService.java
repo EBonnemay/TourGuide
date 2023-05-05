@@ -1,6 +1,10 @@
 package tourGuide.service;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -21,11 +25,14 @@ public class RewardsService {
     private int defaultProximityBuffer = 10;
 	private int proximityBuffer = defaultProximityBuffer;
 	private int attractionProximityRange = 200;
-	private final GpsUtil gpsUtil;
+	private final GPSUtilService gpsUtil;
 	private final RewardCentral rewardsCentral;
+
+	private final ExecutorService executorService = Executors.newFixedThreadPool(10000);
+
 	//Rewards service class is constructed with gpsUtil and RewardCentral
 	
-	public RewardsService(GpsUtil gpsUtil, RewardCentral rewardCentral) {
+	public RewardsService(GPSUtilService gpsUtil, RewardCentral rewardCentral) {
 		this.gpsUtil = gpsUtil;
 		this.rewardsCentral = rewardCentral;
 	}
@@ -45,14 +52,16 @@ public class RewardsService {
 	// it adds a new reward to the user.
 
 	public void calculateRewards(User user) {
-		List<VisitedLocation> userLocations = user.getVisitedLocations();
-		List<Attraction> attractions = gpsUtil.getAttractions();
+		List<VisitedLocation> userLocations = user.getVisitedLocations().stream().collect(Collectors.toList());
+		List<Attraction> attractions = gpsUtil.getListOfAttractions();
 		
 		for(VisitedLocation visitedLocation : userLocations) {
 			for(Attraction attraction : attractions) {
 				if(user.getUserRewards().stream().filter(r -> r.attraction.attractionName.equals(attraction.attractionName)).count() == 0) {
 					if(nearAttraction(visitedLocation, attraction)) {
-						user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+						//user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+						setRewardsPoint(user, visitedLocation, attraction);
+						//implémenter des threads
 					}
 				}
 			}
@@ -85,6 +94,17 @@ public class RewardsService {
         double nauticalMiles = 60 * Math.toDegrees(angle);
         double statuteMiles = STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
         return statuteMiles;
+	}
+	public void setRewardsPoint(User user, VisitedLocation visitedLocation, Attraction attraction){
+		Double distance = getDistance(attraction, visitedLocation.location);
+		UserReward userReward = new UserReward(visitedLocation, attraction, distance.intValue());
+		CompletableFuture.supplyAsync(()->{
+			return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
+
+		}, executorService).thenAccept(point->{
+			userReward.setRewardPoints(point);
+			user.addUserReward(userReward);
+		});
 	}
 
 }

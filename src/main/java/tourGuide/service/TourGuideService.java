@@ -15,7 +15,7 @@ import gpsUtil.location.Attraction;
 import gpsUtil.location.Location;
 import gpsUtil.location.VisitedLocation;
 import tourGuide.AttractionWithDistanceToUser;
-import tourGuide.ListOfAttractionsCloseToUser;
+import tourGuide.ListOfFiveAttractionsCloseToOneUser;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.tracker.Tracker;
 import tourGuide.user.User;
@@ -26,13 +26,13 @@ import tripPricer.TripPricer;
 @Service
 public class TourGuideService {
 	private Logger logger = LoggerFactory.getLogger(TourGuideService.class);
-	private final GpsUtil gpsUtil;
 	private final RewardsService rewardsService;
 	private final TripPricer tripPricer = new TripPricer();
 	public final Tracker tracker;
 	boolean testMode = true;
+	private GPSUtilService gpsUtil;
 	
-	public TourGuideService(GpsUtil gpsUtil, RewardsService rewardsService) {
+	public TourGuideService(GPSUtilService gpsUtil, RewardsService rewardsService) {
 		this.gpsUtil = gpsUtil;
 		this.rewardsService = rewardsService;
 		
@@ -63,9 +63,8 @@ public class TourGuideService {
 	 * }
 	 */
 	public VisitedLocation getUserLocation(User user) {
-		VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ?
-			user.getLastVisitedLocation() :
-			trackUserLocation(user);
+
+		VisitedLocation visitedLocation = (user.getVisitedLocations().size()>0)?user.getLastVisitedLocation():trackUserLocation(user);
 		return visitedLocation;
 
 	}
@@ -101,7 +100,14 @@ public class TourGuideService {
 	// en visitant cette position.
 	//Enfin, elle retourne la dernière position visitée.
 	public VisitedLocation trackUserLocation(User user) {
-		VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
+		Location location = new Location(generateRandomLatitude(), generateRandomLongitude());
+		VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(),location, getRandomTime());
+
+		try{
+			visitedLocation = gpsUtil.getUserLocation(user.getUserId());
+		}catch(NumberFormatException numberFormatException){
+			numberFormatException.printStackTrace();
+		}
 		user.addToVisitedLocations(visitedLocation);
 		rewardsService.calculateRewards(user);
 		return visitedLocation;
@@ -111,7 +117,7 @@ public class TourGuideService {
 	//au lieu de renvoyer une lis
 	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 		List<Attraction> nearbyAttractions = new ArrayList<>();
-		for(Attraction attraction : gpsUtil.getAttractions()) {
+		for(Attraction attraction : gpsUtil.getListOfAttractions()) {
 			if(rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {
 				nearbyAttractions.add(attraction);
 			}
@@ -119,11 +125,10 @@ public class TourGuideService {
 		return nearbyAttractions;
 	}
 	//replace previous by :
-	public ListOfAttractionsCloseToUser  getNearByAttractionsV2(VisitedLocation visitedLocation){
+	public ListOfFiveAttractionsCloseToOneUser  getNearByAttractionsV2(VisitedLocation visitedLocation){
 		ArrayList<AttractionWithDistanceToUser> listOfAttractionsWithDistances = new ArrayList<>();
-		double distance = 0;
-		List<Attraction> listOfAttractions = gpsUtil.getAttractions();
-		for (Attraction attraction : gpsUtil.getAttractions()){
+		List<Attraction> allAttractions = gpsUtil.getListOfAttractions();
+		for (Attraction attraction : allAttractions){
 			Location attractionLocation = new Location(attraction.latitude, attraction.longitude);
 			Location locationOfVisitedLocation = new Location(visitedLocation.location.latitude, visitedLocation.location.longitude);
 			double foundDistance = rewardsService.getDistance(locationOfVisitedLocation, attractionLocation);
@@ -136,24 +141,13 @@ public class TourGuideService {
 		}
 		Comparator<AttractionWithDistanceToUser> byDistance = Comparator.comparing(AttractionWithDistanceToUser::getDistanceInMilesBetweenTheUsersLocationAndThisAttraction);
 		Collections.sort(listOfAttractionsWithDistances, byDistance);
-		ListOfAttractionsCloseToUser listOfAttractionsCloseToUser= new ListOfAttractionsCloseToUser();
-		//listOfAttractionsCloseToUser.get
-		//aller chercher la liste d'attractions closetouser dans l'objet list of attractionsclose...
+		ListOfFiveAttractionsCloseToOneUser listOfFiveAttractionsCloseToOneUser = new ListOfFiveAttractionsCloseToOneUser();
 		ArrayList<AttractionWithDistanceToUser> listAttributeOfListObject = new ArrayList<>();
-
-		listAttributeOfListObject.add(listOfAttractionsWithDistances.get(0));
-		listAttributeOfListObject.add(listOfAttractionsWithDistances.get(1));
-		listAttributeOfListObject.add(listOfAttractionsWithDistances.get(2));
-		listAttributeOfListObject.add(listOfAttractionsWithDistances.get(3));
-		listAttributeOfListObject.add(listOfAttractionsWithDistances.get(4));
-		listOfAttractionsCloseToUser.setListOfAttractionsCloseToUser(listAttributeOfListObject);
-
-
-		//dans cette liste ajouter les objets 0 à 4 de la list of attractions with disrtances
-		//set la liste dans l'objet listofattr
-		//retourner l'objet
-
-		return listOfAttractionsCloseToUser;
+		for (int i = 0; i<5 && i <allAttractions.size();i++){
+			listAttributeOfListObject.add(listOfAttractionsWithDistances.get(i));
+		}
+		listOfFiveAttractionsCloseToOneUser.setListOfAttractionsCloseToUser(listAttributeOfListObject);
+		return listOfFiveAttractionsCloseToOneUser;
 	};
 
 	private void addShutDownHook() {
@@ -206,6 +200,21 @@ public class TourGuideService {
 	private Date getRandomTime() {
 		LocalDateTime localDateTime = LocalDateTime.now().minusDays(new Random().nextInt(30));
 	    return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
+	}
+	public HashMap<String, Location> getAllUsersCurrentLocations() {
+		HashMap<String, Location> listOfEachUsersMostRecentLocation = new HashMap<>();
+		List<User> listOfUsers = getAllUsers();
+		//pour chaque utilisateur de listOfUSers
+		//récupérer l'id et le nommer
+		//aller chercher le dernier lieu du suer avec public VisitedLocation getUserLocation(User user)
+		for (User user : listOfUsers) {
+			String id = String.valueOf(user.getUserId());
+			// UUID idV2 = user.getUserId();//lequel des deux?
+			VisitedLocation visitedLocation = getUserLocation(user);
+			Location location = visitedLocation.location;
+			listOfEachUsersMostRecentLocation.put(id, location);
+		}
+		return listOfEachUsersMostRecentLocation;
 	}
 	
 }
