@@ -39,6 +39,7 @@ public class TourGuideService {
 		if(testMode) {
 			logger.info("TestMode enabled");
 			logger.debug("Initializing users");
+			//créations de users pour le test
 			initializeInternalUsers();
 			logger.debug("Finished initializing users");
 		}
@@ -75,6 +76,7 @@ public class TourGuideService {
 	
 	public List<User> getAllUsers() {
 		return internalUserMap.values().stream().collect(Collectors.toList());
+		//converts map to list through a stream of user objects
 	}
 	
 	public void addUser(User user) {
