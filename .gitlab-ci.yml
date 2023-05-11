@@ -23,4 +23,12 @@ test:
     paths:
       - build
       - .gradle
-
+  artifacts:
+    when: always
+    paths:
+      - build/jacocoHtml
+      - build/reports
+      - build/jacoco/test.exec
+    expire_in: 7 days
+    reports:
+      junit: build/test-results/test/TEST-*.xml
