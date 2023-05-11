@@ -1,4 +1,4 @@
-image: gradle:jdk8-jammy
+image: gradle:4.8.1-jdk8
 
 before_script:
   - GRADLE_USER_HOME="$(pwd)/.gradle"
