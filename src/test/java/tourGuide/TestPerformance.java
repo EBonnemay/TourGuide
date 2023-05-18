@@ -2,6 +2,7 @@ package tourGuide;
 
 import static org.junit.Assert.assertTrue;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,19 +50,24 @@ public class TestPerformance {
 	@Test
 	public void highVolumeTrackLocation() {
 		GPSUtilService gpsUtil = new GPSUtilService();
+		System.out.println(gpsUtil.getListOfAttractions().get(1).attractionName);
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
 		// Users should be incremented up to 100,000, and test finishes within 15 minutes
-		InternalTestHelper.setInternalUserNumber(10);
+		InternalTestHelper.setInternalUserNumber(100000);
+
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
 		List<User> allUsers = new ArrayList<>();
+		System.out.println("size is "+ allUsers.size());
 		allUsers = tourGuideService.getAllUsers();
 		
 	    StopWatch stopWatch = new StopWatch();
 		stopWatch.start(); // chrono started
-		for(User user : allUsers) {
-			tourGuideService.trackUserLocation(user);
-		}
+		//for(User user : allUsers) {
+		//	System.out.println("name is " + user.getUserName());
+		//}
+		tourGuideService.trackAllUserLocation(allUsers).join();
+
 		stopWatch.stop(); // chrono stopped
 		tourGuideService.tracker.stopTracking();
 
@@ -87,8 +93,16 @@ public class TestPerformance {
 		allUsers.forEach(u -> u.addToVisitedLocations(new VisitedLocation(u.getUserId(), attraction, new Date())));
 	     
 	    allUsers.forEach(u -> rewardsService.calculateRewards(u));
+
+		try {
+			TimeUnit.SECONDS.sleep(200);
+		}
+		catch (InterruptedException e) {
+			throw new RuntimeException();
+		}
 	    
 		for(User user : allUsers) {
+			System.out.println(user.getUserName() + " " + user.getUserRewards().size());
 			assertTrue(user.getUserRewards().size() > 0);
 		}
 		stopWatch.stop();

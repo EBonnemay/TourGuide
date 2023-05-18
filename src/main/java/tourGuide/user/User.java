@@ -58,7 +58,8 @@ public class User {
 	}
 	
 	public void addToVisitedLocations(VisitedLocation visitedLocation) {
-		visitedLocations.add(visitedLocation);
+		/// manque this
+		this.visitedLocations.add(visitedLocation);
 	}
 	
 	public List<VisitedLocation> getVisitedLocations() {
@@ -71,7 +72,8 @@ public class User {
 	
 	public void addUserReward(UserReward userReward) {
 		if(userRewards.stream().filter(r -> !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {
-			userRewards.add(userReward);
+			// manque this
+			this.userRewards.add(userReward);
 		}
 	}
 	
@@ -97,6 +99,17 @@ public class User {
 	
 	public List<Provider> getTripDeals() {
 		return tripDeals;
+	}
+
+	//added
+	public User getUserById(List<User> list, UUID userId){
+		for(User user : list) {
+			if (user.getUserId().equals(userId)) {
+				return (user);
+			}
+		}
+		return null;
+
 	}
 
 }

@@ -11,21 +11,36 @@ import org.slf4j.LoggerFactory;
 
 import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
-
+//extends Thread : this class can be run in the background
 public class Tracker extends Thread {
 	private Logger logger = LoggerFactory.getLogger(Tracker.class);
 	private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(5);
+	//tracking every 5 minutes
+
 	//private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 	//chercher une classe qui génère les threads de façon dynamique
-	private final ExecutorService executorService = Executors.newFixedThreadPool(1000);
+
+	private final ExecutorService executorService = Executors.newFixedThreadPool(60);
+	//1000 threads can run at the same time
 	//private final ExecutorService executorService = Executors.newCachedThreadPool();
 	private final TourGuideService tourGuideService;
 	private boolean stop = false;
 
 	public Tracker(TourGuideService tourGuideService) {
 		this.tourGuideService = tourGuideService;
-		
+		System.out.println("before calling executorService");
+
 		executorService.submit(this);
+		System.out.println("after calling executorService");
+		System.out.println("this is "+ this.getName());
+
+		//this : the tracker object instanciated with this tracker instance
+		//step1 : task added to the queue of tasks waiting to be executed by ExecutorService
+		//if worker thread available, it is assigned to execute the task
+		// if no worker thread available, new thread is created (no more than the limit) and assigned to the task
+		//the worker thread executes the run method of the runnable object passed to executorService.submit()
+		//when the run method completes, the worker thread is returned to the pool of available threads to be assigned to another task
+		//this process continues until all submitted tasks have been executed, or until the ExecutorService is shut down
 	}
 	
 	/**

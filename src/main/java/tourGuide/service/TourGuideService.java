@@ -3,6 +3,10 @@ package tourGuide.service;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -25,12 +29,14 @@ import tripPricer.TripPricer;
 
 @Service
 public class TourGuideService {
+	//rajouter un executorService??
 	private Logger logger = LoggerFactory.getLogger(TourGuideService.class);
 	private final RewardsService rewardsService;
 	private final TripPricer tripPricer = new TripPricer();
 	public final Tracker tracker;
 	boolean testMode = true;
 	private GPSUtilService gpsUtil;
+	private final ExecutorService executorService = Executors.newFixedThreadPool(60);
 	
 	public TourGuideService(GPSUtilService gpsUtil, RewardsService rewardsService) {
 		this.gpsUtil = gpsUtil;
@@ -65,7 +71,7 @@ public class TourGuideService {
 	 */
 	public VisitedLocation getUserLocation(User user) {
 
-		VisitedLocation visitedLocation = (user.getVisitedLocations().size()>0)?user.getLastVisitedLocation():trackUserLocation(user);
+		VisitedLocation visitedLocation = (user.getVisitedLocations().size()>0)?user.getLastVisitedLocation():trackUserLocation(user).join();
 		return visitedLocation;
 
 	}
@@ -101,19 +107,47 @@ public class TourGuideService {
 	// pour calculer les récompenses potentielles que l'utilisateur pourrait recevoir
 	// en visitant cette position.
 	//Enfin, elle retourne la dernière position visitée.
-	public VisitedLocation trackUserLocation(User user) {
+	/*public VisitedLocation trackUserLocation(User user) {
+		//les deux lignes ci-dessous ne sont pas nécessaires car elles sont overridées par la ligne 110
 		Location location = new Location(generateRandomLatitude(), generateRandomLongitude());
 		VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(),location, getRandomTime());
-
+		//vérification???????
 		try{
-			visitedLocation = gpsUtil.getUserLocation(user.getUserId());
+			CompletableFuture<Void> userLocationFuture = gpsUtil.getUserLocation(user, this);
+			userLocationFuture.get();
 		}catch(NumberFormatException numberFormatException){
 			numberFormatException.printStackTrace();
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
 		}
 		user.addToVisitedLocations(visitedLocation);
 		rewardsService.calculateRewards(user);
 		return visitedLocation;
+	}*/
+	public CompletableFuture<Void> trackAllUserLocation(List<User> users) {
+		List<CompletableFuture<VisitedLocation>> completableFutures = users.stream()
+				.map(user -> this.trackUserLocation(user))
+				.collect(Collectors.toList());
+		return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()]));
 	}
+
+	public CompletableFuture<VisitedLocation> trackUserLocation(User user) {
+		//les deux lignes ci-dessous ne sont pas nécessaires car elles sont overridées par la ligne 110
+		CompletableFuture<VisitedLocation> visitedLocationCompletableFuture = CompletableFuture.supplyAsync(() -> {
+			VisitedLocation loc = gpsUtil.getUserLocation(user.getUserId());
+			return loc;
+		}, executorService).thenApplyAsync((loc) -> {
+			user.addToVisitedLocations(loc);
+			rewardsService.calculateRewards(user).join();
+			return loc;
+		}, rewardsService.getExecutor());
+		return visitedLocationCompletableFuture;
+	}
+
+
+
 	//en paramètre : un lieu visité; en return : une proposition de listes de lieux à visiter
 
 	//au lieu de renvoyer une lis
@@ -153,6 +187,9 @@ public class TourGuideService {
 	};
 
 	private void addShutDownHook() {
+		//shutdown hook is a thread that gets executed when the JVM shuts down, either normally or abnormally.
+		//when jvm shuts down, run method of this thread is executed : it calls the stopTracking method on the tracker Object, causing it to
+		// stop tracking user locations and shut down the thread.
 		Runtime.getRuntime().addShutdownHook(new Thread() { 
 		      public void run() {
 		        tracker.stopTracking();
