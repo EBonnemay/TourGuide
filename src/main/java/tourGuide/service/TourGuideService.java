@@ -50,6 +50,7 @@ public class TourGuideService {
 			logger.debug("Finished initializing users");
 		}
 		tracker = new Tracker(this);
+
 		addShutDownHook();
 	}
 	// renvoie les récompenses de l'utilisateur passé en paramètre.
@@ -127,6 +128,8 @@ public class TourGuideService {
 		return visitedLocation;
 	}*/
 	public CompletableFuture<Void> trackAllUserLocation(List<User> users) {
+		System.out.println("inside track all user Location");
+		System.out.println(users.size()+ " is number of users");
 		List<CompletableFuture<VisitedLocation>> completableFutures = users.stream()
 				.map(user -> this.trackUserLocation(user))
 				.collect(Collectors.toList());
@@ -134,9 +137,11 @@ public class TourGuideService {
 	}
 
 	public CompletableFuture<VisitedLocation> trackUserLocation(User user) {
+		System.out.println("inside track user Location");
 		//les deux lignes ci-dessous ne sont pas nécessaires car elles sont overridées par la ligne 110
 		CompletableFuture<VisitedLocation> visitedLocationCompletableFuture = CompletableFuture.supplyAsync(() -> {
 			VisitedLocation loc = gpsUtil.getUserLocation(user.getUserId());
+			System.out.println(user.getUserName() + " has location latitude "+ loc.location.latitude+ " and longitude "+ loc.location.longitude);
 			return loc;
 		}, executorService).thenApplyAsync((loc) -> {
 			user.addToVisitedLocations(loc);

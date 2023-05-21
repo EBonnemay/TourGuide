@@ -135,19 +135,19 @@ public class RewardsService {
 		return this.executorService;
 	}
 	public CompletableFuture<Void> calculateRewards(User user) {
+
 		List<VisitedLocation> userLocations = new ArrayList<>(user.getVisitedLocations());
 		//cause erreur :
 		//List<VisitedLocation> userLocations = user.getVisitedLocations();
 		List<Attraction> attractions = gpsUtil.getListOfAttractions();
-		//List<UserReward> userRewards = user.getUserRewards();
+		List<UserReward> userRewards = user.getUserRewards();
 		//is this collection modified while loop iterating over it?
 
 		List<CompletableFuture<Void>> futures = new ArrayList<>();
-		/*for (Attraction attraction : attractions) {
-				if (userRewards.stream().anyMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
-					continue;
-				}*/
 		for (Attraction attraction : attractions) {
+			if (userRewards.stream().anyMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
+				continue;
+			}
 			for (VisitedLocation visitedLocation : userLocations) {
 				if (nearAttraction(visitedLocation, attraction)) {
 					/*if (userRewards.stream().anyMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
@@ -155,17 +155,18 @@ public class RewardsService {
 					} else {*/
 					CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 						//synchronized (userRewards) {
-							//if (userRewards.stream().noneMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
-								user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
-								// ????
-								//userRewards.add(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
-							//}
+						//if (userRewards.stream().noneMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
+						user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+						// ????
+						//userRewards.add(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+						//}
 						//}
 					}, executorService);
 					futures.add(future);
 					break;
 				}
 			}
+
 		}
 		return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
 	}
