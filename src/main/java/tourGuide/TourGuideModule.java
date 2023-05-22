@@ -5,11 +5,13 @@ import org.springframework.context.annotation.Configuration;
 
 import gpsUtil.GpsUtil;
 import org.springframework.context.annotation.Primary;
+import org.springframework.scheduling.annotation.EnableAsync;
 import rewardCentral.RewardCentral;
 import tourGuide.service.GPSUtilService;
 import tourGuide.service.RewardsService;
 
 @Configuration
+
 public class TourGuideModule {
 	@Primary
 	@Bean

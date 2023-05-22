@@ -33,7 +33,11 @@ public class Tracker extends Thread {
 		System.out.println("before calling executorService");
 		//the following line : this Tracker is parameter of submit method of executor service.
 		// //By doing that, run() method of Tracker object is executed asynchronously in a separate thread.
-		executorService.submit(this);
+		if(!tourGuideService.isTestMode()){
+			executorService.submit(this);
+		}
+
+
 
 		System.out.println("after calling executorService");
 		System.out.println("this is "+ this.getName());

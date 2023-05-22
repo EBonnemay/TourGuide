@@ -49,6 +49,7 @@ public class TourGuideService {
 			initializeInternalUsers();
 			logger.debug("Finished initializing users");
 		}
+
 		tracker = new Tracker(this);
 
 		addShutDownHook();
@@ -260,5 +261,8 @@ public class TourGuideService {
 		}
 		return listOfEachUsersMostRecentLocation;
 	}
-	
+
+	public boolean isTestMode() {
+		return testMode;
+	}
 }

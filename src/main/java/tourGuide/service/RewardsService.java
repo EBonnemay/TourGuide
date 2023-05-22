@@ -2,12 +2,10 @@ package tourGuide.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import gpsUtil.GpsUtil;
@@ -32,7 +30,7 @@ public class RewardsService {
 
 	private final RewardCentral rewardsCentral;
 
-	private final ExecutorService executorService = Executors.newFixedThreadPool(60);
+	private final ExecutorService executorService = Executors.newFixedThreadPool(400);
 
 	//Rewards service class is constructed with gpsUtil and RewardCentral
 	
@@ -128,39 +126,49 @@ public class RewardsService {
 
 		}, executorService).thenAccept(point->{
 			userReward.setRewardPoints(point);
-			user.addUserReward(userReward);
+			//user.addUserReward(userReward);????????????????????????????
 		});
 	}
 	public Executor getExecutor(){
 		return this.executorService;
 	}
 	public CompletableFuture<Void> calculateRewards(User user) {
-
+//POURQUOI COPIE
 		List<VisitedLocation> userLocations = new ArrayList<>(user.getVisitedLocations());
+		//juste assignation
+		List<UserReward> listOfUserRewards = user.getUserRewards();
 		//cause erreur :
 		//List<VisitedLocation> userLocations = user.getVisitedLocations();
 		List<Attraction> attractions = gpsUtil.getListOfAttractions();
-		List<UserReward> userRewards = user.getUserRewards();
+		//List<UserReward> listOfUserRewards = user.getUserRewards();
 		//is this collection modified while loop iterating over it?
 
 		List<CompletableFuture<Void>> futures = new ArrayList<>();
 		for (Attraction attraction : attractions) {
-			if (userRewards.stream().anyMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
-				continue;
-			}
+
 			for (VisitedLocation visitedLocation : userLocations) {
+				if (listOfUserRewards.stream().anyMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
+
+					break;
+				}
+
+
 				if (nearAttraction(visitedLocation, attraction)) {
 					/*if (userRewards.stream().anyMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
 						break;
 					} else {*/
 					CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-						//synchronized (userRewards) {
-						//if (userRewards.stream().noneMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
-						user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
-						// ????
-						//userRewards.add(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
-						//}
-						//}
+
+							//synchronized (userRewards) {
+							//if (userRewards.stream().noneMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
+							//userRewards.add(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+							listOfUserRewards.add(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+							//user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+
+							//userRewards.add(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+							//}
+							//}
+
 					}, executorService);
 					futures.add(future);
 					break;
