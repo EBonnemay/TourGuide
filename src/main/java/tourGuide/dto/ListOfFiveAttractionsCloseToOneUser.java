@@ -1,4 +1,6 @@
-package tourGuide;
+package tourGuide.dto;
+
+import tourGuide.dto.AttractionWithDistanceToUser;
 
 import java.util.ArrayList;
 

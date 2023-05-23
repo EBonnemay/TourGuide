@@ -102,15 +102,6 @@ public class User {
 		return tripDeals;
 	}
 
-	//added
-	public User getUserById(List<User> list, UUID userId){
-		for(User user : list) {
-			if (user.getUserId().equals(userId)) {
-				return (user);
-			}
-		}
-		return null;
 
-	}
 
 }

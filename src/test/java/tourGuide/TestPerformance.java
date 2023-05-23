@@ -60,9 +60,7 @@ public class TestPerformance {
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
 		List<User> allUsers = new ArrayList<>();
-		System.out.println("size is "+ allUsers.size());
 		allUsers = tourGuideService.getAllUsers();
-		System.out.println("size is "+ allUsers.size());
 		for(User u : allUsers){
 			assertEquals(3, u.getVisitedLocations().size());
 		}
@@ -117,12 +115,12 @@ public class TestPerformance {
 		});
 	    //allUsers.forEach(u -> rewardsService.calculateRewards(u));
 		/*LET TIME AFTER TURNING THREAD CALCULATE REWARD*/
-		/*try {
+		try {
 			TimeUnit.SECONDS.sleep(10);
 		} catch (InterruptedException e) {
 			System.out.println("interrupted exception");
 			throw new RuntimeException();
-		}*/
+		}
 		//ASSERT
 		for(User user : allUsers) {
 			System.out.println(user.getUserName() + " " + user.getUserRewards().size());

@@ -24,13 +24,13 @@ public class RewardsService {
 	// proximity in miles
     private int defaultProximityBuffer = 10;
 	private int proximityBuffer = defaultProximityBuffer;
-	private int attractionProximityRange = 200;
+	private int attractionProximityRange = 60;
 	private final GPSUtilService gpsUtil;
 
 
 	private final RewardCentral rewardsCentral;
 
-	private final ExecutorService executorService = Executors.newFixedThreadPool(400);
+	private final ExecutorService executorService = Executors.newFixedThreadPool(60);
 
 	//Rewards service class is constructed with gpsUtil and RewardCentral
 	
@@ -147,10 +147,10 @@ public class RewardsService {
 		for (Attraction attraction : attractions) {
 
 			for (VisitedLocation visitedLocation : userLocations) {
-				if (listOfUserRewards.stream().anyMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
+				//if (listOfUserRewards.stream().anyMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
 
-					break;
-				}
+					//break;
+				//}
 
 
 				if (nearAttraction(visitedLocation, attraction)) {
@@ -162,7 +162,7 @@ public class RewardsService {
 							//synchronized (userRewards) {
 							//if (userRewards.stream().noneMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
 							//userRewards.add(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
-							listOfUserRewards.add(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+							user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
 							//user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
 
 							//userRewards.add(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));

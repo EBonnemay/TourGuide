@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -14,12 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import gpsUtil.GpsUtil;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.Location;
 import gpsUtil.location.VisitedLocation;
-import tourGuide.AttractionWithDistanceToUser;
-import tourGuide.ListOfFiveAttractionsCloseToOneUser;
+import tourGuide.dto.AttractionWithDistanceToUser;
+import tourGuide.dto.ListOfFiveAttractionsCloseToOneUser;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.tracker.Tracker;
 import tourGuide.user.User;
@@ -71,6 +69,7 @@ public class TourGuideService {
 	 *     visitedLocation = trackUserLocation(user);
 	 * }
 	 */
+	//A TESTER
 	public VisitedLocation getUserLocation(User user) {
 
 		VisitedLocation visitedLocation = (user.getVisitedLocations().size()>0)?user.getLastVisitedLocation():trackUserLocation(user).join();
@@ -129,8 +128,7 @@ public class TourGuideService {
 		return visitedLocation;
 	}*/
 	public CompletableFuture<Void> trackAllUserLocation(List<User> users) {
-		System.out.println("inside track all user Location");
-		System.out.println(users.size()+ " is number of users");
+
 		List<CompletableFuture<VisitedLocation>> completableFutures = users.stream()
 				.map(user -> this.trackUserLocation(user))
 				.collect(Collectors.toList());
@@ -138,11 +136,10 @@ public class TourGuideService {
 	}
 
 	public CompletableFuture<VisitedLocation> trackUserLocation(User user) {
-		System.out.println("inside track user Location");
+
 		//les deux lignes ci-dessous ne sont pas nécessaires car elles sont overridées par la ligne 110
 		CompletableFuture<VisitedLocation> visitedLocationCompletableFuture = CompletableFuture.supplyAsync(() -> {
 			VisitedLocation loc = gpsUtil.getUserLocation(user.getUserId());
-			System.out.println(user.getUserName() + " has location latitude "+ loc.location.latitude+ " and longitude "+ loc.location.longitude);
 			return loc;
 		}, executorService).thenApplyAsync((loc) -> {
 			user.addToVisitedLocations(loc);
@@ -157,6 +154,7 @@ public class TourGuideService {
 	//en paramètre : un lieu visité; en return : une proposition de listes de lieux à visiter
 
 	//au lieu de renvoyer une lis
+	//A TESTER
 	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 		List<Attraction> nearbyAttractions = new ArrayList<>();
 		for(Attraction attraction : gpsUtil.getListOfAttractions()) {
@@ -246,6 +244,7 @@ public class TourGuideService {
 		LocalDateTime localDateTime = LocalDateTime.now().minusDays(new Random().nextInt(30));
 	    return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
 	}
+	//A TESTER
 	public HashMap<String, Location> getAllUsersCurrentLocations() {
 		HashMap<String, Location> listOfEachUsersMostRecentLocation = new HashMap<>();
 		List<User> listOfUsers = getAllUsers();

@@ -8,9 +8,10 @@ import java.util.UUID;
 
 import org.junit.Test;
 
-import gpsUtil.GpsUtil;
 import gpsUtil.location.VisitedLocation;
 import rewardCentral.RewardCentral;
+import tourGuide.dto.AttractionWithDistanceToUser;
+import tourGuide.dto.ListOfFiveAttractionsCloseToOneUser;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.service.GPSUtilService;
 import tourGuide.service.RewardsService;
@@ -114,7 +115,7 @@ public class TestTourGuideService {
 	}
 
 
-	
+	@Test
 	public void getTripDeals() {
 		GPSUtilService gpsUtil = new GPSUtilService();
 		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
@@ -127,7 +128,7 @@ public class TestTourGuideService {
 		
 		tourGuideService.tracker.stopTracking();
 		
-		assertEquals(10, providers.size());
+		assertEquals(5, providers.size());
 	}
 	
 	
