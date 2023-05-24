@@ -148,11 +148,8 @@ public class RewardsService {
 
 			for (VisitedLocation visitedLocation : userLocations) {
 				//if (listOfUserRewards.stream().anyMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
-
 					//break;
 				//}
-
-
 				if (nearAttraction(visitedLocation, attraction)) {
 					/*if (userRewards.stream().anyMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
 						break;

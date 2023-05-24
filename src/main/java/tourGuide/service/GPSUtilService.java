@@ -85,7 +85,7 @@ public class GPSUtilService {
     }
 
     //refactoring
-    public CompletableFuture<Void> getUserLocation(User user, TourGuideService tourGuideService){
+    /*public CompletableFuture<Void> getUserLocation(User user, TourGuideService tourGuideService){
         //return type enables the caller to wait for the completion of all asynchronous tasks if needed.
         //ensures that all users' locations are tracked before proceeding
         return CompletableFuture.supplyAsync(()->{
@@ -99,7 +99,7 @@ public class GPSUtilService {
         // it is still required as part of the Consumer interface.
         // It's simply a placeholder for the result of the CompletableFuture,
         // which is then passed to the trackUserLocation method.
-    }
+    }*/
 
 
 

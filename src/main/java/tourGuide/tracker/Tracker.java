@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory;
 
 import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
+
+import javax.annotation.Generated;
+
 //extends Thread : this class can be run in the background
 public class Tracker extends Thread {
 	private Logger logger = LoggerFactory.getLogger(Tracker.class);
@@ -26,7 +29,6 @@ public class Tracker extends Thread {
 
 	private final TourGuideService tourGuideService;
 	private boolean stop = false;
-
 	public Tracker(TourGuideService tourGuideService) {
 		System.out.println("tracker  constructor with tour guide service parameter");
 		this.tourGuideService = tourGuideService;

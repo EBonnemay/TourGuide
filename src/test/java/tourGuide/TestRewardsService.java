@@ -75,5 +75,47 @@ public class TestRewardsService {
 
 		assertEquals(gpsUtil.getListOfAttractions().size(), userRewards.size());
 	}
-	
+	@Test
+	public void addUserRewardsTest(){
+		//ARRANGE
+		GPSUtilService gpsUtil = new GPSUtilService();
+		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
+
+		InternalTestHelper.setInternalUserNumber(0);
+		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
+
+		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
+		Attraction attraction = gpsUtil.getListOfAttractions().get(0);
+
+		VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
+		//user.addToVisitedLocations(visitedLocation);
+		assertTrue(user.getUserRewards().isEmpty());
+		//ACT
+		user.addUserReward(new UserReward(visitedLocation, attraction, 4));
+		assertEquals(1, user.getUserRewards().size());
+
+		//ASSERT
+	}
+	@Test
+	public void addUserRewardsIfAlreadyExistsTest(){
+		//ARRANGE
+		GPSUtilService gpsUtil = new GPSUtilService();
+		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
+
+		InternalTestHelper.setInternalUserNumber(0);
+		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
+
+		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
+		Attraction attraction = gpsUtil.getListOfAttractions().get(0);
+
+		VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
+		user.addUserReward(new UserReward(visitedLocation, attraction, 4));
+
+		UserReward reward = user.getUserRewards().get(0);
+
+		user.addUserReward(reward);
+		assertEquals(1, user.getUserRewards().size());
+
+		//ASSERT
+	}
 }

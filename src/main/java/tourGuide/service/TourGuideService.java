@@ -155,7 +155,7 @@ public class TourGuideService {
 
 	//au lieu de renvoyer une lis
 	//A TESTER
-	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
+	/*public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 		List<Attraction> nearbyAttractions = new ArrayList<>();
 		for(Attraction attraction : gpsUtil.getListOfAttractions()) {
 			if(rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {
@@ -163,7 +163,7 @@ public class TourGuideService {
 			}
 		}
 		return nearbyAttractions;
-	}
+	}*/
 	//replace previous by :
 	public ListOfFiveAttractionsCloseToOneUser  getNearByAttractionsV2(VisitedLocation visitedLocation){
 		ArrayList<AttractionWithDistanceToUser> listOfAttractionsWithDistances = new ArrayList<>();
