@@ -14,8 +14,11 @@ import java.util.concurrent.Executors;
 @Service
 public class GPSUtilService {
     GpsUtil gpsUtil;
+
+
     private final ExecutorService executorService = Executors.newFixedThreadPool(60);
     public GPSUtilService(){
+        System.out.println("hi in gpsUtilService constructor");
         gpsUtil = new GpsUtil();
     }
     TourGuideService tourGuideService;
@@ -112,5 +115,7 @@ public class GPSUtilService {
     // dans ces threads : getULoc qui a besoin de executor service qui crée le thread et le rajoute à un autre fil de thread
     //thenAccept
     //visitedLocation résultat de getUserLoc(); une fois qu'on a le result on accepte trackuserLoc
+
+
 
 }

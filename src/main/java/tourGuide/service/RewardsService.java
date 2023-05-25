@@ -35,6 +35,7 @@ public class RewardsService {
 	//Rewards service class is constructed with gpsUtil and RewardCentral
 	
 	public RewardsService(GPSUtilService gpsUtil, RewardCentral rewardCentral) {
+		System.out.println("hi in rewardsService constructor");
 		this.gpsUtil = gpsUtil;
 		this.rewardsCentral = rewardCentral;
 	}

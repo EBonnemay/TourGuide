@@ -23,21 +23,21 @@ public class Tracker extends Thread {
 	//private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 	//chercher une classe qui génère les threads de façon dynamique
 
-	//private final ExecutorService executorService = Executors.newFixedThreadPool(10000);
-	private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+	private final ExecutorService executorService = Executors.newFixedThreadPool(60);
+	//private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 	//1000 threads can run at the same time
 
 	private final TourGuideService tourGuideService;
 	private boolean stop = false;
 	public Tracker(TourGuideService tourGuideService) {
-		System.out.println("tracker  constructor with tour guide service parameter");
+		System.out.println("hi in tracker  constructor with tour guide service parameter");
 		this.tourGuideService = tourGuideService;
 
 		//the following line : this Tracker is parameter of submit method of executor service.
 		// //By doing that, run() method of Tracker object is executed asynchronously in a separate thread.
-		if(!tourGuideService.isTestMode()){
-			executorService.submit(this);
-		}
+
+		executorService.submit(this);
+
 
 
 
@@ -54,7 +54,7 @@ public class Tracker extends Thread {
 		//step5 : when the run method completes, the worker thread is returned to the pool of available threads to be assigned to another task
 		//this process continues until all submitted tasks have been executed, or until the ExecutorService is shut down
 	}
-	
+
 	/**
 	 * Assures to shut down the Tracker thread
 	 */
@@ -73,19 +73,20 @@ public class Tracker extends Thread {
 	en utilisant les threads disponibles dans le pool de threads.*/
 	@Override
 	public void run() {
-		System.out.println("hi");
+		System.out.println("hi in run method of tracker");
 		StopWatch stopWatch = new StopWatch();
 		while(true) {
 			if(Thread.currentThread().isInterrupted() || stop) {
 				logger.debug("Tracker stopping");
 				break;
 			}
+
 			List<User> users = tourGuideService.getAllUsers();
 			logger.debug("Begin Tracker. Tracking " + users.size() + " users.");
 			stopWatch.start();
 			users.forEach(u -> tourGuideService.trackUserLocation(u));
 			stopWatch.stop();
-			logger.debug("Tracker Time Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds."); 
+			logger.debug("Tracker Time Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
 			stopWatch.reset();
 			try {
 				logger.debug("Tracker sleeping");
@@ -93,6 +94,8 @@ public class Tracker extends Thread {
 			} catch (InterruptedException e) {
 				break;
 			}
+
+
 		}
 		
 	}

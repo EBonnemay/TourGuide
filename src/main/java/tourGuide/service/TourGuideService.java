@@ -33,14 +33,21 @@ public class TourGuideService {
 	private final TripPricer tripPricer = new TripPricer();
 	public final Tracker tracker;
 	boolean testMode = true;
+
+
+
+
+
 	private GPSUtilService gpsUtil;
 	private final ExecutorService executorService = Executors.newFixedThreadPool(60);
 	
 	public TourGuideService(GPSUtilService gpsUtil, RewardsService rewardsService) {
+		logger.debug("hi in tourguideservice constructor");
 		this.gpsUtil = gpsUtil;
 		this.rewardsService = rewardsService;
-		
+
 		if(testMode) {
+			System.out.println("test mode on in TourGuideService class");
 			logger.info("TestMode enabled");
 			logger.debug("Initializing users");
 			//créations de users pour le test
@@ -48,7 +55,10 @@ public class TourGuideService {
 			logger.debug("Finished initializing users");
 		}
 
-		tracker = new Tracker(this);
+			tracker = new Tracker(this);
+
+
+
 
 		addShutDownHook();
 	}
@@ -253,6 +263,8 @@ public class TourGuideService {
 		//aller chercher le dernier lieu du suer avec public VisitedLocation getUserLocation(User user)
 		for (User user : listOfUsers) {
 			String id = String.valueOf(user.getUserId());
+			System.out.println(user.getUserName());
+			System.out.println(listOfUsers.size());
 			// UUID idV2 = user.getUserId();//lequel des deux?
 			VisitedLocation visitedLocation = getUserLocation(user);
 			Location location = visitedLocation.location;
@@ -264,4 +276,8 @@ public class TourGuideService {
 	public boolean isTestMode() {
 		return testMode;
 	}
+	public GPSUtilService getGpsUtilService(){
+		return gpsUtil;
+	}
+
 }
