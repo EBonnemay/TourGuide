@@ -47,37 +47,37 @@ public class RewardsService {
 	public void setDefaultProximityBuffer() {
 		proximityBuffer = defaultProximityBuffer;
 	}
-	//This method calculates rewards for a given user
-	// based on their visited locations and nearby attractions.
-	// It checks if the user has already received a reward for the attraction
-	// and if the user
-	//is near enough to the attraction,
-	// it adds a new reward to the user.
 
-	/*public void calculateRewards(User user) {
-		List<VisitedLocation> userLocations = user.getVisitedLocations().stream().collect(Collectors.toList());
+
+	public CompletableFuture<Void> calculateRewards(User user) {
+		//make a copy of userLocations (user.getVisitedLocations)
+		List<VisitedLocation> userLocations = new ArrayList<>(user.getVisitedLocations());
+
+		List<UserReward> listOfUserRewards = user.getUserRewards();
+
+		//cause erreur :
+		//List<VisitedLocation> userLocations = user.getVisitedLocations();
 
 		List<Attraction> attractions = gpsUtil.getListOfAttractions();
-		
-		for(VisitedLocation visitedLocation : userLocations) {
-			for(Attraction attraction : attractions) {
-		/*
-		how many rewards do you find whose attraction have the same name as attraction in the loop ?
-		ie for each r, is the name of his 'attraction' attribute equals to the line 60 'attraction''s name
 
-		the parameter r is used to represent each individual UserReward object
-		from the stream of rewards returned by getUserRewards() method.
+		List<CompletableFuture<Void>> futures = new ArrayList<>();
+		for (Attraction attraction : attractions) {
 
-				if(user.getUserRewards().stream().filter(r -> r.attraction.attractionName.equals(attraction.attractionName)).count() == 0) {
-					if(nearAttraction(visitedLocation, attraction)) {
-						//user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
-						setRewardsPoint(user, visitedLocation, attraction);
-						//implémenter des threads
-					}
+			for (VisitedLocation visitedLocation : userLocations) {
+
+				if (nearAttraction(visitedLocation, attraction)) {
+					//future captures the result of asynchronous task
+					CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+						user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+					}, executorService);
+					//The task execution will be handled by the executorService, which is an ExecutorService instance passed as an argument.
+					futures.add(future);
+					break;
 				}
 			}
 		}
-	}*/
+		return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+	}
 	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
 		return getDistance(attraction, location) > attractionProximityRange ? false : true;
 	}
@@ -90,9 +90,7 @@ public class RewardsService {
 	private int getRewardPoints(Attraction attraction, User user) {
 		return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
 	}
-	// This method calculates the distance between two locations
-	// using their longitude and latitude values.
-	// It returns the distance in statute miles.
+
 	public double getDistance(Location loc1, Location loc2) {
         double lat1 = Math.toRadians(loc1.latitude);
         double lon1 = Math.toRadians(loc1.longitude);
@@ -118,7 +116,7 @@ public class RewardsService {
 	This allows the main thread to continue executing other tasks while waiting for the result,
 	improving the overall efficiency of the application.
 	 */
-	public void setRewardsPoint(User user, VisitedLocation visitedLocation, Attraction attraction){
+	/*public void setRewardsPoint(User user, VisitedLocation visitedLocation, Attraction attraction){
 		Double distance = getDistance(attraction, visitedLocation.location);
 		UserReward userReward = new UserReward(visitedLocation, attraction, distance.intValue());
 //runs code in the background
@@ -129,51 +127,9 @@ public class RewardsService {
 			userReward.setRewardPoints(point);
 			//user.addUserReward(userReward);????????????????????????????
 		});
-	}
+	}*/
 	public Executor getExecutor(){
 		return this.executorService;
 	}
-	public CompletableFuture<Void> calculateRewards(User user) {
-//POURQUOI COPIE
-		List<VisitedLocation> userLocations = new ArrayList<>(user.getVisitedLocations());
-		//juste assignation
-		List<UserReward> listOfUserRewards = user.getUserRewards();
-		//cause erreur :
-		//List<VisitedLocation> userLocations = user.getVisitedLocations();
-		List<Attraction> attractions = gpsUtil.getListOfAttractions();
-		//List<UserReward> listOfUserRewards = user.getUserRewards();
-		//is this collection modified while loop iterating over it?
 
-		List<CompletableFuture<Void>> futures = new ArrayList<>();
-		for (Attraction attraction : attractions) {
-
-			for (VisitedLocation visitedLocation : userLocations) {
-				//if (listOfUserRewards.stream().anyMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
-					//break;
-				//}
-				if (nearAttraction(visitedLocation, attraction)) {
-					/*if (userRewards.stream().anyMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
-						break;
-					} else {*/
-					CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-
-							//synchronized (userRewards) {
-							//if (userRewards.stream().noneMatch(t -> t.attraction.attractionName == attraction.attractionName)) {
-							//userRewards.add(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
-							user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
-							//user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
-
-							//userRewards.add(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
-							//}
-							//}
-
-					}, executorService);
-					futures.add(future);
-					break;
-				}
-			}
-
-		}
-		return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
-	}
 }

@@ -29,46 +29,30 @@ import tripPricer.TripPricer;
 public class TourGuideService {
 	//rajouter un executorService??
 	private Logger logger = LoggerFactory.getLogger(TourGuideService.class);
+	private GPSUtilService gpsUtil;
 	private final RewardsService rewardsService;
 	private final TripPricer tripPricer = new TripPricer();
 	public final Tracker tracker;
 	boolean testMode = true;
-
-
-
-
-
-	private GPSUtilService gpsUtil;
 	private final ExecutorService executorService = Executors.newFixedThreadPool(60);
 	
 	public TourGuideService(GPSUtilService gpsUtil, RewardsService rewardsService) {
-		logger.debug("hi in tourguideservice constructor");
 		this.gpsUtil = gpsUtil;
 		this.rewardsService = rewardsService;
 
 		if(testMode) {
-			System.out.println("test mode on in TourGuideService class");
 			logger.info("TestMode enabled");
 			logger.debug("Initializing users");
-			//créations de users pour le test
 			initializeInternalUsers();
 			logger.debug("Finished initializing users");
 		}
-
-			tracker = new Tracker(this);
-
-
-
-
+		tracker = new Tracker(this);
 		addShutDownHook();
 	}
-	// renvoie les récompenses de l'utilisateur passé en paramètre.
 	public List<UserReward> getUserRewards(User user) {
 		return user.getUserRewards();
 	}
-	//renvoie la localisation de l'utilisateur passée en paramètre
-	// en utilisant la méthode trackUserLocation pour la récupérer
-	// s'il n'y a pas de localisations enregistrées pour l'utilisateur.
+
 
 	/**
 	 * equivalent de getUserLocation
@@ -79,12 +63,11 @@ public class TourGuideService {
 	 *     visitedLocation = trackUserLocation(user);
 	 * }
 	 */
-	//A TESTER
+
 	public VisitedLocation getUserLocation(User user) {
-
-		VisitedLocation visitedLocation = (user.getVisitedLocations().size()>0)?user.getLastVisitedLocation():trackUserLocation(user).join();
+		VisitedLocation visitedLocation = (user.getVisitedLocations().size()>0)?
+				user.getLastVisitedLocation():trackUserLocation(user).join();
 		return visitedLocation;
-
 	}
 
 	public User getUser(String userName) {
@@ -146,36 +129,24 @@ public class TourGuideService {
 	}
 
 	public CompletableFuture<VisitedLocation> trackUserLocation(User user) {
-
+		System.out.println("inside trackUserLocation");
 		//les deux lignes ci-dessous ne sont pas nécessaires car elles sont overridées par la ligne 110
 		CompletableFuture<VisitedLocation> visitedLocationCompletableFuture = CompletableFuture.supplyAsync(() -> {
 			VisitedLocation loc = gpsUtil.getUserLocation(user.getUserId());
 			return loc;
 		}, executorService).thenApplyAsync((loc) -> {
 			user.addToVisitedLocations(loc);
+			//list of visited locations of this user is modified.
+			//Paris, Madrid, London
 			rewardsService.calculateRewards(user).join();
+			//wait calculateReward is over before returning loc.
 			return loc;
 		}, rewardsService.getExecutor());
 		return visitedLocationCompletableFuture;
 	}
 
 
-
-	//en paramètre : un lieu visité; en return : une proposition de listes de lieux à visiter
-
-	//au lieu de renvoyer une lis
-	//A TESTER
-	/*public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
-		List<Attraction> nearbyAttractions = new ArrayList<>();
-		for(Attraction attraction : gpsUtil.getListOfAttractions()) {
-			if(rewardsService.isWithinAttractionProximity(attraction, visitedLocation.location)) {
-				nearbyAttractions.add(attraction);
-			}
-		}
-		return nearbyAttractions;
-	}*/
-	//replace previous by :
-	public ListOfFiveAttractionsCloseToOneUser  getNearByAttractionsV2(VisitedLocation visitedLocation){
+	public ListOfFiveAttractionsCloseToOneUser  getNearByAttractions(VisitedLocation visitedLocation){
 		ArrayList<AttractionWithDistanceToUser> listOfAttractionsWithDistances = new ArrayList<>();
 		List<Attraction> allAttractions = gpsUtil.getListOfAttractions();
 		for (Attraction attraction : allAttractions){
@@ -202,13 +173,28 @@ public class TourGuideService {
 
 	private void addShutDownHook() {
 		//shutdown hook is a thread that gets executed when the JVM shuts down, either normally or abnormally.
-		//when jvm shuts down, run method of this thread is executed : it calls the stopTracking method on the tracker Object, causing it to
+		//when jvm shuts down, run method of this thread is executed :
+		// it calls the stopTracking method on the tracker Object, causing it to
 		// stop tracking user locations and shut down the thread.
 		Runtime.getRuntime().addShutdownHook(new Thread() { 
 		      public void run() {
 		        tracker.stopTracking();
 		      } 
 		    }); 
+	}
+	public HashMap<String, Location> getAllUsersCurrentLocations() {
+		HashMap<String, Location> listOfEachUsersMostRecentLocation = new HashMap<>();
+		List<User> listOfUsers = getAllUsers();
+		for (User user : listOfUsers) {
+			String id = String.valueOf(user.getUserId());
+			System.out.println(user.getUserName());
+			System.out.println(listOfUsers.size());
+			// UUID idV2 = user.getUserId();//lequel des deux?
+			VisitedLocation visitedLocation = getUserLocation(user);
+			Location location = visitedLocation.location;
+			listOfEachUsersMostRecentLocation.put(id, location);
+		}
+		return listOfEachUsersMostRecentLocation;
 	}
 	
 	/**********************************************************************************
@@ -254,30 +240,8 @@ public class TourGuideService {
 		LocalDateTime localDateTime = LocalDateTime.now().minusDays(new Random().nextInt(30));
 	    return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
 	}
-	//A TESTER
-	public HashMap<String, Location> getAllUsersCurrentLocations() {
-		HashMap<String, Location> listOfEachUsersMostRecentLocation = new HashMap<>();
-		List<User> listOfUsers = getAllUsers();
-		//pour chaque utilisateur de listOfUSers
-		//récupérer l'id et le nommer
-		//aller chercher le dernier lieu du suer avec public VisitedLocation getUserLocation(User user)
-		for (User user : listOfUsers) {
-			String id = String.valueOf(user.getUserId());
-			System.out.println(user.getUserName());
-			System.out.println(listOfUsers.size());
-			// UUID idV2 = user.getUserId();//lequel des deux?
-			VisitedLocation visitedLocation = getUserLocation(user);
-			Location location = visitedLocation.location;
-			listOfEachUsersMostRecentLocation.put(id, location);
-		}
-		return listOfEachUsersMostRecentLocation;
-	}
 
-	public boolean isTestMode() {
-		return testMode;
-	}
-	public GPSUtilService getGpsUtilService(){
-		return gpsUtil;
-	}
+
+
 
 }

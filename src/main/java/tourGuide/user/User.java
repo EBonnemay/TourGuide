@@ -60,7 +60,6 @@ public class User {
 	}
 	
 	public void addToVisitedLocations(VisitedLocation visitedLocation) {
-		/// manque this
 		this.visitedLocations.add(visitedLocation);
 	}
 	
@@ -74,7 +73,6 @@ public class User {
 	
 	public void addUserReward(UserReward userReward) {
 		if(this.userRewards.stream().noneMatch(r -> r.attraction.attractionName.equals(userReward.attraction.attractionName))) {
-			// manque this
 			userRewards.add(userReward);
 		}
 	}
@@ -82,7 +80,6 @@ public class User {
 	public List<UserReward> getUserRewards() {
 		return userRewards;
 	}
-	
 	public UserPreferences getUserPreferences() {
 		return userPreferences;
 	}

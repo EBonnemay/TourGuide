@@ -23,7 +23,7 @@ public class GPSUtilService {
     }
     TourGuideService tourGuideService;
     public VisitedLocation getUserLocation(UUID userId){
-
+        System.out.println("hi in get user location");
         try{
             return gpsUtil.getUserLocation(userId);
         }catch(NumberFormatException numberFormatException){

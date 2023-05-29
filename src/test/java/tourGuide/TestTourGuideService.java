@@ -101,18 +101,14 @@ public class TestTourGuideService {
 		InternalTestHelper.setInternalUserNumber(0);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 		tourGuideService.tracker.stopTracking();
+
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
 		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user).join();
-		System.out.println("user location is lat : "+ visitedLocation.location.latitude+" long : "+ visitedLocation.location.longitude);
-		//List<Attraction> attractions = tourGuideService.getNearByAttractions(visitedLocation);
-		ListOfFiveAttractionsCloseToOneUser listObject = tourGuideService.getNearByAttractionsV2(visitedLocation);
 
+		ListOfFiveAttractionsCloseToOneUser listObject = tourGuideService.getNearByAttractions(visitedLocation);
 
-		//assertEquals(5, attractions.size());
 		assertEquals(5, listObject.getListOfAttractionsCloseToUser().size());
-		for(AttractionWithDistanceToUser attraction : listObject.getListOfAttractionsCloseToUser()){
-			System.out.println(attraction.getNameOfTouristAttraction()+" "+ attraction.getDistanceInMilesBetweenTheUsersLocationAndThisAttraction());
-		}
+
 	}
 
 
@@ -129,22 +125,6 @@ public class TestTourGuideService {
 
 		assertEquals(5, providers.size());
 	}
-
-	/*@Test
-	public void getUserLocationTest(){
-		//ARRANGE
-		GPSUtilService gpsUtil = new GPSUtilService();
-		RewardsService rewardsService = new RewardsService(gpsUtil, new RewardCentral());
-		InternalTestHelper.setInternalUserNumber(1);
-		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
-		VisitedLocation lastVisitedLocation = user
-		//ACT
-
-		getUserLocation(User user)
-
-		//ASSERT
-
-	}*/
 
 	@Test
 	public void  getAllUsersCurrentLocationsTest() {
@@ -191,10 +171,6 @@ public class TestTourGuideService {
 
 		//ACT
 		tourGuideService.addUser(newUser);
-		System.out.println(user.getUserId());
-		System.out.println(user.getUserName());
-		System.out.println(newUser.getUserId());
-		System.out.println(newUser.getUserName());
 		//ASSERT
 		assertEquals(2, tourGuideService.getAllUsers().size());
 		assertTrue(tourGuideService.getAllUsers().contains(newUser));

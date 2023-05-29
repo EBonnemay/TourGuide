@@ -63,12 +63,9 @@ public class TestRewardsService {
 
 		InternalTestHelper.setInternalUserNumber(1);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
+
 		tourGuideService.tracker.stopTracking();
-		User user = tourGuideService.getAllUsers().get(0);
 
-		//3 visited Locations
-
-		//ACT
 		rewardsService.calculateRewards(tourGuideService.getAllUsers().get(0)).join();
 
 		List<UserReward> userRewards = tourGuideService.getUserRewards(tourGuideService.getAllUsers().get(0));
@@ -88,7 +85,6 @@ public class TestRewardsService {
 		Attraction attraction = gpsUtil.getListOfAttractions().get(0);
 
 		VisitedLocation visitedLocation = gpsUtil.getUserLocation(user.getUserId());
-		//user.addToVisitedLocations(visitedLocation);
 		assertTrue(user.getUserRewards().isEmpty());
 		//ACT
 		user.addUserReward(new UserReward(visitedLocation, attraction, 4));
@@ -115,7 +111,5 @@ public class TestRewardsService {
 
 		user.addUserReward(reward);
 		assertEquals(1, user.getUserRewards().size());
-
-		//ASSERT
 	}
 }
