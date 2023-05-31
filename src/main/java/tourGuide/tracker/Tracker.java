@@ -43,18 +43,10 @@ public class Tracker extends Thread {
 		stop = true;
 		executorService.shutdownNow();
 	}
-	/*méthode principale qui est appelée lorsque le thread est démarré.
-	Elle récupère tous les utilisateurs, suit leur localisation,
-	mesure le temps passé à suivre leur position
-	et met le thread en pause pour un certain temps
-	avant de recommencer le suivi de localisation.
-	List<User> users = tourGuideService.getAllUsers(); récupère tous les utilisateurs
-	et users.forEach(u -> tourGuideService.trackUserLocation(u));
-	suit la position de chaque utilisateur en parallèle
-	en utilisant les threads disponibles dans le pool de threads.*/
+
 	@Override
 	public void run() {
-		System.out.println("hi in run method of tracker");
+
 		StopWatch stopWatch = new StopWatch();
 		while(true) {
 			if(Thread.currentThread().isInterrupted() || stop) {

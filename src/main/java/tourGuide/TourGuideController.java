@@ -31,7 +31,7 @@ public class TourGuideController {
     
     @RequestMapping("/getLocation") 
     public String getLocation(@RequestParam String userName) {
-    	VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));
+    	VisitedLocation visitedLocation = tourGuideService.getOrTrackUserLocation(getUser(userName));
 		//This method serializes the Location object to a JSON string
         //that can be sent over the web
         //as a response to the getLocation request.
@@ -41,13 +41,12 @@ public class TourGuideController {
 
     @RequestMapping("/getNearbyAttractions")
     public String getNearbyAttractions(@RequestParam String userName) {
-    	VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));
+    	VisitedLocation visitedLocation = tourGuideService.getOrTrackUserLocation(getUser(userName));
     	return JsonStream.serialize(tourGuideService.getNearByAttractions(visitedLocation));
     }
     
     @RequestMapping("/getRewards") 
     public String getRewards(@RequestParam String userName) {
-        System.out.println(userName);
     	return JsonStream.serialize(tourGuideService.getUserRewards(getUser(userName)));
     }
     

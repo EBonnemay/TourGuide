@@ -33,6 +33,9 @@ public class AttractionWithDistanceToUser {
     public void setDistanceInMilesBetweenTheUsersLocationAndThisAttraction(double distance){
         this.distanceInMilesBetweenTheUsersLocationAndThisAttraction=distance;
     }
+    public void setRewardsPointsForVisitingThisAttraction(int points){
+        this.rewardsPointsForVisitingThisAttraction = points;
+    }
     public String getNameOfTouristAttraction(){
         return nameOfTouristAttraction;
     }
@@ -44,6 +47,9 @@ public class AttractionWithDistanceToUser {
     }
     public double getDistanceInMilesBetweenTheUsersLocationAndThisAttraction(){
         return distanceInMilesBetweenTheUsersLocationAndThisAttraction;
+    }
+    public int getRewardsPointsForVisitingThisAttraction(){
+        return rewardsPointsForVisitingThisAttraction;
     }
     // Name of Tourist attraction, > nom de l'attraction
     // Tourist attractions lat/long, > localisation de l'attraction

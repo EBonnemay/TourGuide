@@ -35,9 +35,11 @@ public class RewardsService {
 	//Rewards service class is constructed with gpsUtil and RewardCentral
 	
 	public RewardsService(GPSUtilService gpsUtil, RewardCentral rewardCentral) {
-		System.out.println("hi in rewardsService constructor");
 		this.gpsUtil = gpsUtil;
 		this.rewardsCentral = rewardCentral;
+	}
+	public RewardCentral getRewardsCentral(){
+		return rewardsCentral;
 	}
 	
 	public void setProximityBuffer(int proximityBuffer) {
@@ -78,6 +80,14 @@ public class RewardsService {
 		}
 		return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
 	}
+
+	public CompletableFuture<Void> calculateAllRewards(List<User> users) {
+
+		List<CompletableFuture<Void>> completableFutures = users.stream()
+				.map(user -> this.calculateRewards(user))
+				.collect(Collectors.toList());
+		return CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()]));
+	}
 	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {
 		return getDistance(attraction, location) > attractionProximityRange ? false : true;
 	}
@@ -104,30 +114,7 @@ public class RewardsService {
         double statuteMiles = STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
         return statuteMiles;
 	}
-	/*
-	The thread system is used here to improve performance
-	by running the time-consuming rewardsCentral.getAttractionRewardPoints() method in the background
-	without blocking the main thread.
-	By using a CompletableFuture with the supplyAsync method,
-	we are able to execute the getAttractionRewardPoints method
-	in a separate thread provided by the executorService.
-	Once the result is available, the thenAccept method is used to update the user reward points
-	and add the reward to the user's rewards list.
-	This allows the main thread to continue executing other tasks while waiting for the result,
-	improving the overall efficiency of the application.
-	 */
-	/*public void setRewardsPoint(User user, VisitedLocation visitedLocation, Attraction attraction){
-		Double distance = getDistance(attraction, visitedLocation.location);
-		UserReward userReward = new UserReward(visitedLocation, attraction, distance.intValue());
-//runs code in the background
-		CompletableFuture.supplyAsync(()->{
-			return rewardsCentral.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
 
-		}, executorService).thenAccept(point->{
-			userReward.setRewardPoints(point);
-			//user.addUserReward(userReward);????????????????????????????
-		});
-	}*/
 	public Executor getExecutor(){
 		return this.executorService;
 	}

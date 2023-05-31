@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import gpsUtil.location.Attraction;
 import gpsUtil.location.Location;
 import gpsUtil.location.VisitedLocation;
+import rewardCentral.RewardCentral;
 import tourGuide.dto.AttractionWithDistanceToUser;
 import tourGuide.dto.ListOfFiveAttractionsCloseToOneUser;
 import tourGuide.helper.InternalTestHelper;
@@ -35,6 +36,7 @@ public class TourGuideService {
 	public final Tracker tracker;
 	boolean testMode = true;
 	private final ExecutorService executorService = Executors.newFixedThreadPool(60);
+
 	
 	public TourGuideService(GPSUtilService gpsUtil, RewardsService rewardsService) {
 		this.gpsUtil = gpsUtil;
@@ -64,7 +66,7 @@ public class TourGuideService {
 	 * }
 	 */
 
-	public VisitedLocation getUserLocation(User user) {
+	public VisitedLocation getOrTrackUserLocation(User user) {
 		VisitedLocation visitedLocation = (user.getVisitedLocations().size()>0)?
 				user.getLastVisitedLocation():trackUserLocation(user).join();
 		return visitedLocation;
@@ -129,15 +131,11 @@ public class TourGuideService {
 	}
 
 	public CompletableFuture<VisitedLocation> trackUserLocation(User user) {
-		System.out.println("inside trackUserLocation");
-		//les deux lignes ci-dessous ne sont pas nécessaires car elles sont overridées par la ligne 110
 		CompletableFuture<VisitedLocation> visitedLocationCompletableFuture = CompletableFuture.supplyAsync(() -> {
 			VisitedLocation loc = gpsUtil.getUserLocation(user.getUserId());
 			return loc;
-		}, executorService).thenApplyAsync((loc) -> {
+		}, executorService).thenApplyAsync((loc) -> {//async : new thread forked
 			user.addToVisitedLocations(loc);
-			//list of visited locations of this user is modified.
-			//Paris, Madrid, London
 			rewardsService.calculateRewards(user).join();
 			//wait calculateReward is over before returning loc.
 			return loc;
@@ -146,7 +144,7 @@ public class TourGuideService {
 	}
 
 
-	public ListOfFiveAttractionsCloseToOneUser  getNearByAttractions(VisitedLocation visitedLocation){
+	public ListOfFiveAttractionsCloseToOneUser getNearByAttractions(VisitedLocation visitedLocation){
 		ArrayList<AttractionWithDistanceToUser> listOfAttractionsWithDistances = new ArrayList<>();
 		List<Attraction> allAttractions = gpsUtil.getListOfAttractions();
 		for (Attraction attraction : allAttractions){
@@ -158,6 +156,7 @@ public class TourGuideService {
 			attractionWithDistanceToUser.setLocationOfTouristAttraction(attractionLocation);
 			attractionWithDistanceToUser.setLocationOfUserCloseToAttraction(locationOfVisitedLocation);
 			attractionWithDistanceToUser.setDistanceInMilesBetweenTheUsersLocationAndThisAttraction(foundDistance);
+			attractionWithDistanceToUser.setRewardsPointsForVisitingThisAttraction(rewardsService.getRewardsCentral().getAttractionRewardPoints(attraction.attractionId, visitedLocation.userId));
 			listOfAttractionsWithDistances.add(attractionWithDistanceToUser);
 		}
 		Comparator<AttractionWithDistanceToUser> byDistance = Comparator.comparing(AttractionWithDistanceToUser::getDistanceInMilesBetweenTheUsersLocationAndThisAttraction);
@@ -187,10 +186,7 @@ public class TourGuideService {
 		List<User> listOfUsers = getAllUsers();
 		for (User user : listOfUsers) {
 			String id = String.valueOf(user.getUserId());
-			System.out.println(user.getUserName());
-			System.out.println(listOfUsers.size());
-			// UUID idV2 = user.getUserId();//lequel des deux?
-			VisitedLocation visitedLocation = getUserLocation(user);
+			VisitedLocation visitedLocation = user.getLastVisitedLocation();
 			Location location = visitedLocation.location;
 			listOfEachUsersMostRecentLocation.put(id, location);
 		}
